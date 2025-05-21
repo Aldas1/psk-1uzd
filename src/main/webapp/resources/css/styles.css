@@ -105,6 +105,23 @@ h2 {
     margin-left: 10px;
 }
 
+/* Checkbox Styles */
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+    margin-left: 120px; /* Align with other form inputs */
+}
+
+.checkbox-group td {
+    padding: 5px 15px 5px 0;
+}
+
+.checkbox-group label {
+    margin-left: 5px;
+}
+
 /* Button Styles */
 .button {
     background-color: #2980b9;

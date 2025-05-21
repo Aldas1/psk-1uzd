@@ -14,6 +14,8 @@ import jakarta.inject.Named;
 import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 
 @Named
 @RequestScoped
@@ -29,6 +31,7 @@ public class StudentBean implements Serializable {
     private Student newStudent;
     private Student selectedStudent;
     private Long selectedCourseId;
+    private Long[] selectedCourseIds; // New array to hold selected course IDs from checkboxes
     private String persistenceType = "jpa"; // Default to JPA
 
     @PostConstruct
@@ -36,11 +39,23 @@ public class StudentBean implements Serializable {
         students = studentService.getAllStudentsJpa();
         newStudent = new Student();
         selectedStudent = new Student();
+        selectedCourseIds = new Long[0]; // Initialize empty array
     }
 
     public String saveStudent() {
         try {
+            // Save the student first to get an ID
             studentService.saveStudentJpa(newStudent);
+
+            // Now enroll student in each selected course
+            if (selectedCourseIds != null && selectedCourseIds.length > 0) {
+                for (Long courseId : selectedCourseIds) {
+                    studentService.enrollStudentInCourseJpa(newStudent.getId(), courseId);
+                }
+                // Refresh the student to include courses
+                newStudent = studentService.getStudentByIdJpa(newStudent.getId());
+            }
+
             init(); // Refresh the list
             return "students?faces-redirect=true";
         } catch (Exception e) {
@@ -158,6 +173,14 @@ public class StudentBean implements Serializable {
 
     public void setSelectedCourseId(Long selectedCourseId) {
         this.selectedCourseId = selectedCourseId;
+    }
+
+    public Long[] getSelectedCourseIds() {
+        return selectedCourseIds;
+    }
+
+    public void setSelectedCourseIds(Long[] selectedCourseIds) {
+        this.selectedCourseIds = selectedCourseIds;
     }
 
     public String getPersistenceType() {

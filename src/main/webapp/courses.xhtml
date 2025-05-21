@@ -37,44 +37,46 @@
          <h:messages globalOnly="true" infoClass="info-message" errorClass="error-message" />
 
          <!-- Add New Course Form -->
-         <h:form id="courseForm">
-            <div class="form-section">
-               <h3>Add New Course</h3>
+         <h:panelGroup rendered="#{not courseBean.editMode}">
+            <h:form id="courseForm">
+               <div class="form-section">
+                  <h3>Add New Course</h3>
 
-               <div class="form-row">
-                  <h:outputLabel for="courseCode" value="Course Code:"/>
-                  <h:inputText id="courseCode" value="#{courseBean.newCourse.courseCode}" required="true" requiredMessage="Course code is required"/>
-                  <h:message for="courseCode" styleClass="error-message"/>
-               </div>
+                  <div class="form-row">
+                     <h:outputLabel for="courseCode" value="Course Code:"/>
+                     <h:inputText id="courseCode" value="#{courseBean.newCourse.courseCode}" required="true" requiredMessage="Course code is required"/>
+                     <h:message for="courseCode" styleClass="error-message"/>
+                  </div>
 
-               <div class="form-row">
-                  <h:outputLabel for="courseTitle" value="Title:"/>
-                  <h:inputText id="courseTitle" value="#{courseBean.newCourse.title}" required="true" requiredMessage="Course title is required"/>
-                  <h:message for="courseTitle" styleClass="error-message"/>
-               </div>
+                  <div class="form-row">
+                     <h:outputLabel for="courseTitle" value="Title:"/>
+                     <h:inputText id="courseTitle" value="#{courseBean.newCourse.title}" required="true" requiredMessage="Course title is required"/>
+                     <h:message for="courseTitle" styleClass="error-message"/>
+                  </div>
 
-               <div class="form-row">
-                  <h:outputLabel for="courseCredits" value="Credits:"/>
-                  <h:inputText id="courseCredits" value="#{courseBean.newCourse.credits}" required="true" requiredMessage="Credits are required">
-                     <f:convertNumber integerOnly="true"/>
-                  </h:inputText>
-                  <h:message for="courseCredits" styleClass="error-message"/>
-               </div>
+                  <div class="form-row">
+                     <h:outputLabel for="courseCredits" value="Credits:"/>
+                     <h:inputText id="courseCredits" value="#{courseBean.newCourse.credits}" required="true" requiredMessage="Credits are required">
+                        <f:convertNumber integerOnly="true"/>
+                     </h:inputText>
+                     <h:message for="courseCredits" styleClass="error-message"/>
+                  </div>
 
-               <div class="form-row">
-                  <h:outputLabel for="courseFaculty" value="Faculty:"/>
-                  <h:selectOneMenu id="courseFaculty" value="#{courseBean.selectedFacultyId}" required="true" requiredMessage="Faculty is required">
-                     <f:selectItem itemLabel="-- Select Faculty --" itemValue="#{null}" noSelectionOption="true"/>
-                     <f:selectItems value="#{facultyBean.faculties}" var="faculty" itemLabel="#{faculty.name} (#{faculty.department})" itemValue="#{faculty.id}"/>
-                  </h:selectOneMenu>
-                  <h:message for="courseFaculty" styleClass="error-message"/>
-               </div>
+                  <div class="form-row">
+                     <h:outputLabel for="courseFaculty" value="Faculty:"/>
+                     <h:selectOneMenu id="courseFaculty" value="#{courseBean.selectedFacultyId}" required="true" requiredMessage="Faculty is required">
+                        <f:selectItem itemLabel="-- Select Faculty --" itemValue="#{null}" noSelectionOption="true"/>
+                        <f:selectItems value="#{facultyBean.faculties}" var="faculty" itemLabel="#{faculty.name} (#{faculty.department})" itemValue="#{faculty.id}"/>
+                     </h:selectOneMenu>
+                     <h:message for="courseFaculty" styleClass="error-message"/>
+                  </div>
 
-               <div class="form-row">
-                  <h:commandButton value="Save Course" action="#{courseBean.saveCourse()}" styleClass="button"/>
+                  <div class="form-row">
+                     <h:commandButton value="Save Course" action="#{courseBean.saveCourse()}" styleClass="button"/>
+                  </div>
                </div>
-            </div>
-         </h:form>
+            </h:form>
+         </h:panelGroup>
 
          <!-- Edit Course Form (shows only when in edit mode) -->
          <h:panelGroup rendered="#{courseBean.editMode}">

@@ -66,52 +66,54 @@
             <h:messages globalOnly="true" infoClass="info-message" errorClass="error-message" />
 
             <!-- Add New Student Form -->
-            <h:form id="studentForm">
-                <div class="form-section">
-                    <h3>Add New Student</h3>
+            <h:panelGroup rendered="#{not studentBean.editMode}">
+                <h:form id="studentForm">
+                    <div class="form-section">
+                        <h3>Add New Student</h3>
 
-                    <div class="form-row">
-                        <h:outputLabel for="studentId" value="Student ID:"/>
-                        <h:inputText id="studentId" value="#{studentBean.newStudent.studentId}" required="true" requiredMessage="Student ID is required"/>
-                        <h:message for="studentId" styleClass="error-message"/>
-                    </div>
+                        <div class="form-row">
+                            <h:outputLabel for="studentId" value="Student ID:"/>
+                            <h:inputText id="studentId" value="#{studentBean.newStudent.studentId}" required="true" requiredMessage="Student ID is required"/>
+                            <h:message for="studentId" styleClass="error-message"/>
+                        </div>
 
-                    <div class="form-row">
-                        <h:outputLabel for="firstName" value="First Name:"/>
-                        <h:inputText id="firstName" value="#{studentBean.newStudent.firstName}" required="true" requiredMessage="First name is required"/>
-                        <h:message for="firstName" styleClass="error-message"/>
-                    </div>
+                        <div class="form-row">
+                            <h:outputLabel for="firstName" value="First Name:"/>
+                            <h:inputText id="firstName" value="#{studentBean.newStudent.firstName}" required="true" requiredMessage="First name is required"/>
+                            <h:message for="firstName" styleClass="error-message"/>
+                        </div>
 
-                    <div class="form-row">
-                        <h:outputLabel for="lastName" value="Last Name:"/>
-                        <h:inputText id="lastName" value="#{studentBean.newStudent.lastName}" required="true" requiredMessage="Last name is required"/>
-                        <h:message for="lastName" styleClass="error-message"/>
-                    </div>
+                        <div class="form-row">
+                            <h:outputLabel for="lastName" value="Last Name:"/>
+                            <h:inputText id="lastName" value="#{studentBean.newStudent.lastName}" required="true" requiredMessage="Last name is required"/>
+                            <h:message for="lastName" styleClass="error-message"/>
+                        </div>
 
-                    <div class="form-row">
-                        <h:outputLabel for="email" value="Email:"/>
-                        <h:inputText id="email" value="#{studentBean.newStudent.email}">
-                            <f:validateRegex pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"/>
-                        </h:inputText>
-                        <h:message for="email" styleClass="error-message"/>
-                    </div>
+                        <div class="form-row">
+                            <h:outputLabel for="email" value="Email:"/>
+                            <h:inputText id="email" value="#{studentBean.newStudent.email}">
+                                <f:validateRegex pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"/>
+                            </h:inputText>
+                            <h:message for="email" styleClass="error-message"/>
+                        </div>
 
-                    <div class="form-row" style="flex-direction: column; align-items: flex-start;">
-                        <h:outputLabel value="Select Courses:"/>
-                        <div class="checkbox-group">
-                            <h:selectManyCheckbox id="selectedCourses" value="#{studentBean.selectedCourseIds}" layout="pageDirection" styleClass="checkbox-group">
-                                <f:selectItems value="#{courseBean.courses}" var="course"
-                                               itemLabel="#{course.courseCode} - #{course.title}"
-                                               itemValue="#{course.id}"/>
-                            </h:selectManyCheckbox>
+                        <div class="form-row" style="flex-direction: column; align-items: flex-start;">
+                            <h:outputLabel value="Select Courses:"/>
+                            <div class="checkbox-group">
+                                <h:selectManyCheckbox id="selectedCourses" value="#{studentBean.selectedCourseIds}" layout="pageDirection" styleClass="checkbox-group">
+                                    <f:selectItems value="#{courseBean.courses}" var="course"
+                                                   itemLabel="#{course.courseCode} - #{course.title}"
+                                                   itemValue="#{course.id}"/>
+                                </h:selectManyCheckbox>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <h:commandButton value="Save Student" action="#{studentBean.saveStudent()}" styleClass="button"/>
                         </div>
                     </div>
-
-                    <div class="form-row">
-                        <h:commandButton value="Save Student" action="#{studentBean.saveStudent()}" styleClass="button"/>
-                    </div>
-                </div>
-            </h:form>
+                </h:form>
+            </h:panelGroup>
 
             <!-- Edit Student Form (shows only when in edit mode) -->
             <h:panelGroup rendered="#{studentBean.editMode}">

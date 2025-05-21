@@ -37,26 +37,28 @@
             <h:messages globalOnly="true" infoClass="info-message" errorClass="error-message" />
 
             <!-- Add New Faculty Form -->
-            <h:form id="facultyForm">
-                <div class="form-section">
-                    <h3>Add New Faculty</h3>
-                    <div class="form-row">
-                        <h:outputLabel for="facultyName" value="Name:"/>
-                        <h:inputText id="facultyName" value="#{facultyBean.newFaculty.name}" required="true" requiredMessage="Faculty name is required"/>
-                        <h:message for="facultyName" styleClass="error-message"/>
-                    </div>
+            <h:panelGroup rendered="#{not facultyBean.editMode}">
+                <h:form id="facultyForm">
+                    <div class="form-section">
+                        <h3>Add New Faculty</h3>
+                        <div class="form-row">
+                            <h:outputLabel for="facultyName" value="Name:"/>
+                            <h:inputText id="facultyName" value="#{facultyBean.newFaculty.name}" required="true" requiredMessage="Faculty name is required"/>
+                            <h:message for="facultyName" styleClass="error-message"/>
+                        </div>
 
-                    <div class="form-row">
-                        <h:outputLabel for="facultyDepartment" value="Department:"/>
-                        <h:inputText id="facultyDepartment" value="#{facultyBean.newFaculty.department}" required="true" requiredMessage="Department is required"/>
-                        <h:message for="facultyDepartment" styleClass="error-message"/>
-                    </div>
+                        <div class="form-row">
+                            <h:outputLabel for="facultyDepartment" value="Department:"/>
+                            <h:inputText id="facultyDepartment" value="#{facultyBean.newFaculty.department}" required="true" requiredMessage="Department is required"/>
+                            <h:message for="facultyDepartment" styleClass="error-message"/>
+                        </div>
 
-                    <div class="form-row">
-                        <h:commandButton value="Save Faculty" action="#{facultyBean.saveFaculty()}" styleClass="button"/>
+                        <div class="form-row">
+                            <h:commandButton value="Save Faculty" action="#{facultyBean.saveFaculty()}" styleClass="button"/>
+                        </div>
                     </div>
-                </div>
-            </h:form>
+                </h:form>
+            </h:panelGroup>
 
             <!-- Edit Faculty Form (shows only when in edit mode) -->
             <h:panelGroup rendered="#{facultyBean.editMode}">

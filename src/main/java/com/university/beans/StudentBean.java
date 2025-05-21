@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.stream.Collectors;
 
 @Named
 @SessionScoped
@@ -60,7 +61,10 @@ public class StudentBean implements Serializable {
             }
 
             init(); // Refresh the list
-            return "students?faces-redirect=true";
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO,
+                            "Success", "Student saved successfully."));
+            return null;
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR,
@@ -73,7 +77,10 @@ public class StudentBean implements Serializable {
         try {
             studentService.deleteStudentJpa(id);
             init(); // Refresh the list
-            return "students?faces-redirect=true";
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO,
+                            "Success", "Student deleted successfully."));
+            return null;
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR,
@@ -101,12 +108,16 @@ public class StudentBean implements Serializable {
 
     public String updateStudent() {
         try {
+            // Get the current enrolled courses before updating
+            Set<Course> currentCourses = null;
+            if (selectedStudent.getCourses() != null) {
+                currentCourses = new HashSet<>(selectedStudent.getCourses());
+            } else {
+                currentCourses = new HashSet<>();
+            }
+
             // First save the basic student info
             studentService.saveStudentJpa(selectedStudent);
-
-            // Now handle course enrollments
-            // First, get the current courses
-            Set<Course> currentCourses = new HashSet<>(selectedStudent.getCourses());
 
             // Convert selectedCourseIds to a Set of Course objects
             Set<Course> newCourses = new HashSet<>();
@@ -121,20 +132,38 @@ public class StudentBean implements Serializable {
 
             // Determine courses to add
             for (Course course : newCourses) {
-                if (!currentCourses.contains(course)) {
+                boolean alreadyEnrolled = false;
+                for (Course currentCourse : currentCourses) {
+                    if (currentCourse.getId().equals(course.getId())) {
+                        alreadyEnrolled = true;
+                        break;
+                    }
+                }
+                if (!alreadyEnrolled) {
                     studentService.enrollStudentInCourseJpa(selectedStudent.getId(), course.getId());
                 }
             }
 
             // Determine courses to remove
             for (Course course : currentCourses) {
-                if (!newCourses.contains(course)) {
+                boolean shouldKeep = false;
+                for (Course newCourse : newCourses) {
+                    if (newCourse.getId().equals(course.getId())) {
+                        shouldKeep = true;
+                        break;
+                    }
+                }
+                if (!shouldKeep) {
                     studentService.removeStudentFromCourseJpa(selectedStudent.getId(), course.getId());
                 }
             }
 
             this.editMode = false;
             init(); // Refresh the list
+
+            // Refresh the students list to show the updated data
+            students = studentService.getAllStudentsJpa();
+
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_INFO,
                             "Success", "Student updated successfully."));
@@ -185,7 +214,7 @@ public class StudentBean implements Serializable {
                         new FacesMessage(FacesMessage.SEVERITY_INFO,
                                 "Enrollment successful", "Student has been enrolled in the course."));
             }
-            return "editStudent?faces-redirect=true";
+            return null;
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR,
@@ -206,7 +235,7 @@ public class StudentBean implements Serializable {
                         new FacesMessage(FacesMessage.SEVERITY_INFO,
                                 "Enrollment successful", "Student has been enrolled in the selected courses."));
             }
-            return "editStudent?faces-redirect=true";
+            return null;
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR,
@@ -225,7 +254,7 @@ public class StudentBean implements Serializable {
                         new FacesMessage(FacesMessage.SEVERITY_INFO,
                                 "Course removed", "Student has been removed from the course."));
             }
-            return "editStudent?faces-redirect=true";
+            return null;
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR,
@@ -280,6 +309,14 @@ public class StudentBean implements Serializable {
 
     public void setSelectedCourseIds(Long[] selectedCourseIds) {
         this.selectedCourseIds = selectedCourseIds;
+    }
+
+    public String getPersistenceType() {
+        return persistenceType;
+    }
+
+    public void setPersistenceType(String persistenceType) {
+        this.persistenceType = persistenceType;
     }
 
     public void setEditMode(boolean editMode) {

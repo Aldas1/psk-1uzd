@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<h:head>
+   <title>Edit Student</title>
+   <h:outputStylesheet library="css" name="styles.css"/>
+</h:head>
+
+<h:body>
+   <div class="container">
+      <div class="header">
+         <h1>Edit Student</h1>
+         <div class="nav">
+            <h:link outcome="index" value="Home" styleClass="nav-item"/>
+            <h:link outcome="faculties" value="Faculties" styleClass="nav-item"/>
+            <h:link outcome="courses" value="Courses" styleClass="nav-item"/>
+            <h:link outcome="students" value="Students" styleClass="nav-item current"/>
+         </div>
+      </div>
+
+      <div class="content">
+         <h2>Edit Student Information</h2>
+
+         <!-- Messages for feedback -->
+         <h:messages globalOnly="true" styleClass="error-message"/>
+
+         <h:form id="editStudentForm">
+            <div class="form-section">
+               <div class="form-row">
+                  <h:outputLabel for="studentId" value="Student ID:"/>
+                  <h:inputText id="studentId" value="#{studentBean.selectedStudent.studentId}" readonly="true"/>
+               </div>
+
+               <div class="form-row">
+                  <h:outputLabel for="firstName" value="First Name:"/>
+                  <h:inputText id="firstName" value="#{studentBean.selectedStudent.firstName}" required="true" requiredMessage="First name is required"/>
+                  <h:message for="firstName" styleClass="error-message"/>
+               </div>
+
+               <div class="form-row">
+                  <h:outputLabel for="lastName" value="Last Name:"/>
+                  <h:inputText id="lastName" value="#{studentBean.selectedStudent.lastName}" required="true" requiredMessage="Last name is required"/>
+                  <h:message for="lastName" styleClass="error-message"/>
+               </div>
+
+               <div class="form-row">
+                  <h:outputLabel for="email" value="Email:"/>
+                  <h:inputText id="email" value="#{studentBean.selectedStudent.email}" required="true" requiredMessage="Email is required"/>
+                  <h:message for="email" styleClass="error-message"/>
+               </div>
+
+               <div class="form-actions">
+                  <h:commandButton value="Update Student" action="#{studentBean.updateStudent()}" styleClass="button"/>
+                  <h:link outcome="students" value="Cancel" styleClass="button secondary"/>
+               </div>
+            </div>
+         </h:form>
+
+         <h3>Course Enrollments</h3>
+
+         <!-- Current Enrollments -->
+         <h:form id="enrollmentsForm">
+            <h:dataTable value="#{studentBean.selectedStudent.courses}" var="course"
+                         styleClass="data-table" headerClass="table-header"
+                         rowClasses="table-row-odd, table-row-even"
+                         rendered="#{not empty studentBean.selectedStudent.courses}">
+               <h:column>
+                  <f:facet name="header">Course Code</f:facet>
+                  #{course.courseCode}
+               </h:column>
+
+               <h:column>
+                  <f:facet name="header">Title</f:facet>
+                  #{course.title}
+               </h:column>
+
+               <h:column>
+                  <f:facet name="header">Credits</f:facet>
+                  #{course.credits}
+               </h:column>
+
+               <h:column>
+                  <f:facet name="header">Faculty</f:facet>
+                  #{course.faculty.name}
+               </h:column>
+
+               <h:column>
+                  <f:facet name="header">Action</f:facet>
+                  <h:commandButton value="Remove" action="#{studentBean.removeFromCourse(course.id)}"
+                                   styleClass="button small danger"
+                                   onclick="return confirm('Are you sure you want to remove this course from the student?')"/>
+               </h:column>
+            </h:dataTable>
+
+            <h:panelGroup rendered="#{empty studentBean.selectedStudent.courses}">
+               <p>This student is not enrolled in any courses.</p>
+            </h:panelGroup>
+         </h:form>
+
+         <!-- Add New Enrollment -->
+         <h:form id="enrollForm">
+            <div class="form-section">
+               <h3>Enroll in a Course</h3>
+
+               <div class="form-row">
+                  <h:outputLabel for="courseSelect" value="Select Course:"/>
+                  <h:selectOneMenu id="courseSelect" value="#{studentBean.selectedCourseId}" required="true" requiredMessage="Course is required">
+                     <f:selectItem itemLabel="-- Select Course --" itemValue="#{null}" noSelectionOption="true"/>
+                     <f:selectItems value="#{studentBean.availableCourses}" var="course"
+                                    itemLabel="#{course.courseCode} - #{course.title}" itemValue="#{course.id}"/>
+                  </h:selectOneMenu>
+                  <h:message for="courseSelect" styleClass="error-message"/>
+               </div>
+
+               <div class="form-row">
+                  <h:commandButton value="Enroll" action="#{studentBean.enrollInCourse()}" styleClass="button"
+                                   disabled="#{empty studentBean.availableCourses}"/>
+               </div>
+            </div>
+         </h:form>
+      </div>
+
+      <div class="footer">
+         <p>2025 University Management System</p>
+      </div>
+   </div>
+</h:body>
+</html>

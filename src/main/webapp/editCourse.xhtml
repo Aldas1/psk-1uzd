@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<h:head>
+    <title>Edit Course</title>
+    <h:outputStylesheet library="css" name="styles.css"/>
+</h:head>
+
+<h:body>
+    <div class="container">
+        <div class="header">
+            <h1>Edit Course</h1>
+            <div class="nav">
+                <h:link outcome="index" value="Home" styleClass="nav-item"/>
+                <h:link outcome="faculties" value="Faculties" styleClass="nav-item"/>
+                <h:link outcome="courses" value="Courses" styleClass="nav-item current"/>
+                <h:link outcome="students" value="Students" styleClass="nav-item"/>
+            </div>
+        </div>
+
+        <div class="content">
+            <h2>Edit Course Information</h2>
+
+            <h:form id="editCourseForm">
+                <div class="form-section">
+                    <div class="form-row">
+                        <h:outputLabel for="courseId" value="Course ID:"/>
+                        <h:inputText id="courseId" value="#{courseBean.selectedCourse.id}" readonly="true"/>
+                    </div>
+
+                    <div class="form-row">
+                        <h:outputLabel for="courseCode" value="Course Code:"/>
+                        <h:inputText id="courseCode" value="#{courseBean.selectedCourse.courseCode}" required="true" requiredMessage="Course code is required"/>
+                        <h:message for="courseCode" styleClass="error-message"/>
+                    </div>
+
+                    <div class="form-row">
+                        <h:outputLabel for="courseTitle" value="Title:"/>
+                        <h:inputText id="courseTitle" value="#{courseBean.selectedCourse.title}" required="true" requiredMessage="Course title is required"/>
+                        <h:message for="courseTitle" styleClass="error-message"/>
+                    </div>
+
+                    <div class="form-row">
+                        <h:outputLabel for="courseCredits" value="Credits:"/>
+                        <h:inputText id="courseCredits" value="#{courseBean.selectedCourse.credits}" required="true" requiredMessage="Credits are required">
+                            <f:convertNumber integerOnly="true"/>
+                        </h:inputText>
+                        <h:message for="courseCredits" styleClass="error-message"/>
+                    </div>
+
+                    <div class="form-row">
+                        <h:outputLabel for="courseFaculty" value="Faculty:"/>
+                        <h:selectOneMenu id="courseFaculty" value="#{courseBean.selectedFacultyId}" required="true" requiredMessage="Faculty is required">
+                            <f:selectItem itemLabel="-- Select Faculty --" itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{facultyBean.faculties}" var="faculty" itemLabel="#{faculty.name} (#{faculty.department})" itemValue="#{faculty.id}"/>
+                        </h:selectOneMenu>
+                        <h:message for="courseFaculty" styleClass="error-message"/>
+                    </div>
+
+                    <div class="form-actions">
+                        <h:commandButton value="Update Course" action="#{courseBean.updateCourse()}" styleClass="button"/>
+                        <h:link outcome="courses" value="Cancel" styleClass="button secondary"/>
+                    </div>
+                </div>
+            </h:form>
+        </div>
+
+        <div class="footer">
+            <p>2025 University Management System</p>
+        </div>
+    </div>
+</h:body>
+</html>

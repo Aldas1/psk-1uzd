@@ -114,11 +114,6 @@ public class CourseBean implements Serializable {
         }
     }
 
-    public String cancelEdit() {
-        this.editMode = false;
-        return null; // Stay on the current page
-    }
-
     // Getters and setters
     public List<Course> getCourses() {
         return courses;

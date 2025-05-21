@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.stream.Collectors;
 
 @Named
 @SessionScoped
@@ -176,10 +175,6 @@ public class StudentBean implements Serializable {
         }
     }
 
-    public String cancelEdit() {
-        this.editMode = false;
-        return null; // Stay on the current page
-    }
 
     public void toggleStudentCourses(Long studentId) {
         if (showCoursesForStudentId != null && showCoursesForStudentId.equals(studentId)) {
@@ -202,76 +197,6 @@ public class StudentBean implements Serializable {
             return new ArrayList<>(student.getCourses());
         }
         return new ArrayList<>();
-    }
-
-    public String enrollInCourse() {
-        try {
-            if (selectedStudent != null && selectedCourseId != null) {
-                studentService.enrollStudentInCourseJpa(selectedStudent.getId(), selectedCourseId);
-                // Refresh the selected student to show updated courses
-                selectedStudent = studentService.getStudentByIdJpa(selectedStudent.getId());
-                FacesContext.getCurrentInstance().addMessage(null,
-                        new FacesMessage(FacesMessage.SEVERITY_INFO,
-                                "Enrollment successful", "Student has been enrolled in the course."));
-            }
-            return null;
-        } catch (Exception e) {
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                            "Error enrolling student", e.getMessage()));
-            return null;
-        }
-    }
-
-    public String enrollInSelectedCourses() {
-        try {
-            if (selectedStudent != null && selectedCourseIds != null && selectedCourseIds.length > 0) {
-                for (Long courseId : selectedCourseIds) {
-                    studentService.enrollStudentInCourseJpa(selectedStudent.getId(), courseId);
-                }
-                // Refresh the selected student to show updated courses
-                selectedStudent = studentService.getStudentByIdJpa(selectedStudent.getId());
-                FacesContext.getCurrentInstance().addMessage(null,
-                        new FacesMessage(FacesMessage.SEVERITY_INFO,
-                                "Enrollment successful", "Student has been enrolled in the selected courses."));
-            }
-            return null;
-        } catch (Exception e) {
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                            "Error enrolling student", e.getMessage()));
-            return null;
-        }
-    }
-
-    public String removeFromCourse(Long courseId) {
-        try {
-            if (selectedStudent != null) {
-                studentService.removeStudentFromCourseJpa(selectedStudent.getId(), courseId);
-                // Refresh the selected student to show updated courses
-                selectedStudent = studentService.getStudentByIdJpa(selectedStudent.getId());
-                FacesContext.getCurrentInstance().addMessage(null,
-                        new FacesMessage(FacesMessage.SEVERITY_INFO,
-                                "Course removed", "Student has been removed from the course."));
-            }
-            return null;
-        } catch (Exception e) {
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                            "Error removing course", e.getMessage()));
-            return null;
-        }
-    }
-
-    public List<Course> getAvailableCourses() {
-        // Get all courses that the student is not already enrolled in
-        List<Course> allCourses = courseService.getAllCoursesJpa();
-        if (selectedStudent != null && selectedStudent.getCourses() != null) {
-            List<Course> availableCourses = new ArrayList<>(allCourses);
-            availableCourses.removeAll(selectedStudent.getCourses());
-            return availableCourses;
-        }
-        return allCourses;
     }
 
     // Getters and setters

@@ -1,17 +1,21 @@
 package com.university.beans;
 
+import com.university.entity.Course;
 import com.university.entity.Faculty;
 import com.university.service.FacultyService;
 import jakarta.annotation.PostConstruct;
-import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 @Named
-@RequestScoped
+@SessionScoped
 public class FacultyBean implements Serializable {
 
     @Inject
@@ -20,7 +24,7 @@ public class FacultyBean implements Serializable {
     private List<Faculty> faculties;
     private Faculty newFaculty;
     private Faculty selectedFaculty;
-    private String persistenceType = "jpa"; // Default to JPA
+    private boolean editMode = false;
 
     @PostConstruct
     public void init() {
@@ -30,26 +34,64 @@ public class FacultyBean implements Serializable {
     }
 
     public String saveFaculty() {
-        facultyService.saveFacultyJpa(newFaculty);
-        init(); // Refresh the list
-        return "faculties?faces-redirect=true";
+        try {
+            facultyService.saveFacultyJpa(newFaculty);
+            init(); // Refresh the list
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO,
+                            "Success", "Faculty saved successfully."));
+            return null;
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Error saving faculty", e.getMessage()));
+            return null;
+        }
     }
 
     public String deleteFaculty(Long id) {
-        facultyService.deleteFacultyJpa(id);
-        init(); // Refresh the list
-        return "faculties?faces-redirect=true";
+        try {
+            facultyService.deleteFacultyJpa(id);
+            init(); // Refresh the list
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO,
+                            "Success", "Faculty deleted successfully."));
+            return null;
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Error deleting faculty", e.getMessage()));
+            return null;
+        }
     }
 
     public String editFaculty(Faculty faculty) {
         // Load the fresh faculty with all associations
         this.selectedFaculty = facultyService.getFacultyByIdJpa(faculty.getId());
-        return "editFaculty?faces-redirect=true";
+        this.editMode = true;
+        return null; // Stay on the current page
     }
 
     public String updateFaculty() {
-        facultyService.saveFacultyJpa(selectedFaculty);
-        return "faculties?faces-redirect=true";
+        try {
+            facultyService.saveFacultyJpa(selectedFaculty);
+            this.editMode = false;
+            init(); // Refresh the list
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO,
+                            "Success", "Faculty updated successfully."));
+            return null; // Stay on the current page
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Error updating faculty", e.getMessage()));
+            return null;
+        }
+    }
+
+    public String cancelEdit() {
+        this.editMode = false;
+        return null; // Stay on the current page
     }
 
     // Getters and setters
@@ -73,11 +115,11 @@ public class FacultyBean implements Serializable {
         this.selectedFaculty = selectedFaculty;
     }
 
-    public String getPersistenceType() {
-        return persistenceType;
+    public boolean isEditMode() {
+        return editMode;
     }
 
-    public void setPersistenceType(String persistenceType) {
-        this.persistenceType = persistenceType;
+    public void setEditMode(boolean editMode) {
+        this.editMode = editMode;
     }
 }

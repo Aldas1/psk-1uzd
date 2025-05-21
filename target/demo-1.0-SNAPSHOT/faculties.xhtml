@@ -7,6 +7,15 @@
 <h:head>
     <title>Faculty Management</title>
     <h:outputStylesheet library="css" name="styles.css"/>
+    <style type="text/css">
+        .edit-form {
+            background-color: #f0f7fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #bde0f3;
+        }
+    </style>
 </h:head>
 
 <h:body>
@@ -24,6 +33,10 @@
         <div class="content">
             <h2>Faculty List</h2>
 
+            <!-- Global messages -->
+            <h:messages globalOnly="true" infoClass="info-message" errorClass="error-message" />
+
+            <!-- Add New Faculty Form -->
             <h:form id="facultyForm">
                 <div class="form-section">
                     <h3>Add New Faculty</h3>
@@ -45,6 +58,38 @@
                 </div>
             </h:form>
 
+            <!-- Edit Faculty Form (shows only when in edit mode) -->
+            <h:panelGroup rendered="#{facultyBean.editMode}">
+                <h:form id="editFacultyForm">
+                    <div class="edit-form">
+                        <h3>Edit Faculty</h3>
+
+                        <div class="form-row">
+                            <h:outputLabel for="editFacultyId" value="Faculty ID:"/>
+                            <h:inputText id="editFacultyId" value="#{facultyBean.selectedFaculty.id}" readonly="true"/>
+                        </div>
+
+                        <div class="form-row">
+                            <h:outputLabel for="editFacultyName" value="Name:"/>
+                            <h:inputText id="editFacultyName" value="#{facultyBean.selectedFaculty.name}" required="true" requiredMessage="Faculty name is required"/>
+                            <h:message for="editFacultyName" styleClass="error-message"/>
+                        </div>
+
+                        <div class="form-row">
+                            <h:outputLabel for="editFacultyDepartment" value="Department:"/>
+                            <h:inputText id="editFacultyDepartment" value="#{facultyBean.selectedFaculty.department}" required="true" requiredMessage="Department is required"/>
+                            <h:message for="editFacultyDepartment" styleClass="error-message"/>
+                        </div>
+
+                        <div class="form-actions">
+                            <h:commandButton value="Update Faculty" action="#{facultyBean.updateFaculty()}" styleClass="button"/>
+                            <h:commandButton value="Cancel" action="#{facultyBean.cancelEdit()}" styleClass="button secondary" immediate="true"/>
+                        </div>
+                    </div>
+                </h:form>
+            </h:panelGroup>
+
+            <!-- Faculty List Table -->
             <h:form id="facultyListForm">
                 <h:dataTable value="#{facultyBean.faculties}" var="faculty" styleClass="data-table"
                              headerClass="table-header" rowClasses="table-row-odd, table-row-even">

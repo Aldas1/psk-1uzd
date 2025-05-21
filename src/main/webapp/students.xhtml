@@ -25,6 +25,25 @@
         .checkbox-item input {
             margin-right: 5px;
         }
+        .course-count {
+            color: #2980b9;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .course-details {
+            margin-top: 10px;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .edit-form {
+            background-color: #f0f7fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #bde0f3;
+        }
     </style>
 </h:head>
 
@@ -43,6 +62,10 @@
         <div class="content">
             <h2>Student List</h2>
 
+            <!-- Global messages -->
+            <h:messages globalOnly="true" infoClass="info-message" errorClass="error-message" />
+
+            <!-- Add New Student Form -->
             <h:form id="studentForm">
                 <div class="form-section">
                     <h3>Add New Student</h3>
@@ -90,6 +113,57 @@
                 </div>
             </h:form>
 
+            <!-- Edit Student Form (shows only when in edit mode) -->
+            <h:panelGroup rendered="#{studentBean.editMode}">
+                <h:form id="editStudentForm">
+                    <div class="edit-form">
+                        <h3>Edit Student</h3>
+
+                        <div class="form-row">
+                            <h:outputLabel for="editStudentId" value="Student ID:"/>
+                            <h:inputText id="editStudentId" value="#{studentBean.selectedStudent.studentId}" readonly="true"/>
+                        </div>
+
+                        <div class="form-row">
+                            <h:outputLabel for="editFirstName" value="First Name:"/>
+                            <h:inputText id="editFirstName" value="#{studentBean.selectedStudent.firstName}" required="true" requiredMessage="First name is required"/>
+                            <h:message for="editFirstName" styleClass="error-message"/>
+                        </div>
+
+                        <div class="form-row">
+                            <h:outputLabel for="editLastName" value="Last Name:"/>
+                            <h:inputText id="editLastName" value="#{studentBean.selectedStudent.lastName}" required="true" requiredMessage="Last name is required"/>
+                            <h:message for="editLastName" styleClass="error-message"/>
+                        </div>
+
+                        <div class="form-row">
+                            <h:outputLabel for="editEmail" value="Email:"/>
+                            <h:inputText id="editEmail" value="#{studentBean.selectedStudent.email}" required="true" requiredMessage="Email is required">
+                                <f:validateRegex pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"/>
+                            </h:inputText>
+                            <h:message for="editEmail" styleClass="error-message"/>
+                        </div>
+
+                        <div class="form-row" style="flex-direction: column; align-items: flex-start;">
+                            <h:outputLabel value="Assign Courses:"/>
+                            <div class="checkbox-group">
+                                <h:selectManyCheckbox id="editSelectedCourses" value="#{studentBean.selectedCourseIds}" layout="pageDirection" styleClass="checkbox-group">
+                                    <f:selectItems value="#{courseBean.courses}" var="course"
+                                                   itemLabel="#{course.courseCode} - #{course.title}"
+                                                   itemValue="#{course.id}"/>
+                                </h:selectManyCheckbox>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <h:commandButton value="Update Student" action="#{studentBean.updateStudent()}" styleClass="button"/>
+                            <h:commandButton value="Cancel" action="#{studentBean.cancelEdit()}" styleClass="button secondary" immediate="true"/>
+                        </div>
+                    </div>
+                </h:form>
+            </h:panelGroup>
+
+            <!-- Student List Table -->
             <h:form id="studentListForm">
                 <h:dataTable value="#{studentBean.students}" var="student" styleClass="data-table"
                              headerClass="table-header" rowClasses="table-row-odd, table-row-even">
@@ -120,7 +194,40 @@
 
                     <h:column>
                         <f:facet name="header">Courses</f:facet>
-                        <h:outputText value="#{student.courses.size()} courses" />
+                        <h:commandLink styleClass="course-count" action="#{studentBean.toggleStudentCourses(student.id)}">
+                            <h:outputText value="#{student.courses.size()} courses" />
+                        </h:commandLink>
+
+                        <h:panelGroup rendered="#{studentBean.showStudentCourses and studentBean.showCoursesForStudentId eq student.id}">
+                            <div class="course-details">
+                                <h4>Enrolled Courses</h4>
+                                <h:dataTable value="#{studentBean.studentCourses}" var="course"
+                                             styleClass="data-table" headerClass="table-header"
+                                             rowClasses="table-row-odd, table-row-even"
+                                             rendered="#{not empty studentBean.studentCourses}">
+                                    <h:column>
+                                        <f:facet name="header">Course Code</f:facet>
+                                        #{course.courseCode}
+                                    </h:column>
+                                    <h:column>
+                                        <f:facet name="header">Title</f:facet>
+                                        #{course.title}
+                                    </h:column>
+                                    <h:column>
+                                        <f:facet name="header">Credits</f:facet>
+                                        #{course.credits}
+                                    </h:column>
+                                    <h:column>
+                                        <f:facet name="header">Faculty</f:facet>
+                                        #{course.faculty.name}
+                                    </h:column>
+                                </h:dataTable>
+
+                                <h:outputText value="This student is not enrolled in any courses."
+                                              rendered="#{empty studentBean.studentCourses}"
+                                              style="font-style: italic;"/>
+                            </div>
+                        </h:panelGroup>
                     </h:column>
 
                     <h:column>

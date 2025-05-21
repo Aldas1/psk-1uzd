@@ -7,6 +7,15 @@
 <h:head>
    <title>Course Management</title>
    <h:outputStylesheet library="css" name="styles.css"/>
+   <style type="text/css">
+      .edit-form {
+         background-color: #f0f7fa;
+         padding: 15px;
+         border-radius: 5px;
+         margin-bottom: 15px;
+         border: 1px solid #bde0f3;
+      }
+   </style>
 </h:head>
 
 <h:body>
@@ -24,6 +33,10 @@
       <div class="content">
          <h2>Course List</h2>
 
+         <!-- Global messages -->
+         <h:messages globalOnly="true" infoClass="info-message" errorClass="error-message" />
+
+         <!-- Add New Course Form -->
          <h:form id="courseForm">
             <div class="form-section">
                <h3>Add New Course</h3>
@@ -63,6 +76,55 @@
             </div>
          </h:form>
 
+         <!-- Edit Course Form (shows only when in edit mode) -->
+         <h:panelGroup rendered="#{courseBean.editMode}">
+            <h:form id="editCourseForm">
+               <div class="edit-form">
+                  <h3>Edit Course</h3>
+
+                  <div class="form-row">
+                     <h:outputLabel for="editCourseId" value="Course ID:"/>
+                     <h:inputText id="editCourseId" value="#{courseBean.selectedCourse.id}" readonly="true"/>
+                  </div>
+
+                  <div class="form-row">
+                     <h:outputLabel for="editCourseCode" value="Course Code:"/>
+                     <h:inputText id="editCourseCode" value="#{courseBean.selectedCourse.courseCode}" required="true" requiredMessage="Course code is required"/>
+                     <h:message for="editCourseCode" styleClass="error-message"/>
+                  </div>
+
+                  <div class="form-row">
+                     <h:outputLabel for="editCourseTitle" value="Title:"/>
+                     <h:inputText id="editCourseTitle" value="#{courseBean.selectedCourse.title}" required="true" requiredMessage="Course title is required"/>
+                     <h:message for="editCourseTitle" styleClass="error-message"/>
+                  </div>
+
+                  <div class="form-row">
+                     <h:outputLabel for="editCourseCredits" value="Credits:"/>
+                     <h:inputText id="editCourseCredits" value="#{courseBean.selectedCourse.credits}" required="true" requiredMessage="Credits are required">
+                        <f:convertNumber integerOnly="true"/>
+                     </h:inputText>
+                     <h:message for="editCourseCredits" styleClass="error-message"/>
+                  </div>
+
+                  <div class="form-row">
+                     <h:outputLabel for="editCourseFaculty" value="Faculty:"/>
+                     <h:selectOneMenu id="editCourseFaculty" value="#{courseBean.selectedFacultyId}" required="true" requiredMessage="Faculty is required">
+                        <f:selectItem itemLabel="-- Select Faculty --" itemValue="#{null}" noSelectionOption="true"/>
+                        <f:selectItems value="#{facultyBean.faculties}" var="faculty" itemLabel="#{faculty.name} (#{faculty.department})" itemValue="#{faculty.id}"/>
+                     </h:selectOneMenu>
+                     <h:message for="editCourseFaculty" styleClass="error-message"/>
+                  </div>
+
+                  <div class="form-actions">
+                     <h:commandButton value="Update Course" action="#{courseBean.updateCourse()}" styleClass="button"/>
+                     <h:commandButton value="Cancel" action="#{courseBean.cancelEdit()}" styleClass="button secondary" immediate="true"/>
+                  </div>
+               </div>
+            </h:form>
+         </h:panelGroup>
+
+         <!-- Course List Table -->
          <h:form id="courseListForm">
             <h:dataTable value="#{courseBean.courses}" var="course" styleClass="data-table"
                          headerClass="table-header" rowClasses="table-row-odd, table-row-even">

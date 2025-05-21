@@ -2,18 +2,23 @@ package com.university.beans;
 
 import com.university.entity.Course;
 import com.university.entity.Faculty;
+import com.university.entity.Student;
 import com.university.service.CourseService;
 import com.university.service.FacultyService;
+import com.university.service.StudentService;
 import jakarta.annotation.PostConstruct;
-import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 @Named
-@RequestScoped
+@SessionScoped
 public class CourseBean implements Serializable {
 
     @Inject
@@ -26,7 +31,7 @@ public class CourseBean implements Serializable {
     private Course newCourse;
     private Course selectedCourse;
     private Long selectedFacultyId;
-    private String persistenceType = "jpa"; // Default to JPA
+    private boolean editMode = false;
 
     @PostConstruct
     public void init() {
@@ -36,20 +41,40 @@ public class CourseBean implements Serializable {
     }
 
     public String saveCourse() {
-        // If a faculty is selected, set it for the new course
-        if (selectedFacultyId != null) {
-            Faculty faculty = facultyService.getFacultyByIdJpa(selectedFacultyId);
-            newCourse.setFaculty(faculty);
+        try {
+            // If a faculty is selected, set it for the new course
+            if (selectedFacultyId != null) {
+                Faculty faculty = facultyService.getFacultyByIdJpa(selectedFacultyId);
+                newCourse.setFaculty(faculty);
+            }
+            courseService.saveCourseJpa(newCourse);
+            init(); // Refresh the list
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO,
+                            "Success", "Course saved successfully."));
+            return null;
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Error saving course", e.getMessage()));
+            return null;
         }
-        courseService.saveCourseJpa(newCourse);
-        init(); // Refresh the list
-        return "courses?faces-redirect=true";
     }
 
     public String deleteCourse(Long id) {
-        courseService.deleteCourseJpa(id);
-        init(); // Refresh the list
-        return "courses?faces-redirect=true";
+        try {
+            courseService.deleteCourseJpa(id);
+            init(); // Refresh the list
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO,
+                            "Success", "Course deleted successfully."));
+            return null;
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Error deleting course", e.getMessage()));
+            return null;
+        }
     }
 
     public String editCourse(Course course) {
@@ -58,22 +83,40 @@ public class CourseBean implements Serializable {
         // Set the selected faculty ID
         if (this.selectedCourse.getFaculty() != null) {
             this.selectedFacultyId = this.selectedCourse.getFaculty().getId();
+        } else {
+            this.selectedFacultyId = null;
         }
-        return "editCourse?faces-redirect=true";
+        this.editMode = true;
+        return null; // Stay on current page
     }
 
     public String updateCourse() {
-        // If a faculty is selected, set it for the course
-        if (selectedFacultyId != null) {
-            Faculty faculty = facultyService.getFacultyByIdJpa(selectedFacultyId);
-            selectedCourse.setFaculty(faculty);
+        try {
+            // If a faculty is selected, set it for the course
+            if (selectedFacultyId != null) {
+                Faculty faculty = facultyService.getFacultyByIdJpa(selectedFacultyId);
+                selectedCourse.setFaculty(faculty);
+            } else {
+                selectedCourse.setFaculty(null);
+            }
+            courseService.saveCourseJpa(selectedCourse);
+            this.editMode = false;
+            init(); // Refresh the list
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO,
+                            "Success", "Course updated successfully."));
+            return null; // Stay on current page
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Error updating course", e.getMessage()));
+            return null;
         }
-        courseService.saveCourseJpa(selectedCourse);
-        return "courses?faces-redirect=true";
     }
 
-    public List<Faculty> getAvailableFaculties() {
-        return facultyService.getAllFacultiesJpa();
+    public String cancelEdit() {
+        this.editMode = false;
+        return null; // Stay on the current page
     }
 
     // Getters and setters
@@ -105,11 +148,11 @@ public class CourseBean implements Serializable {
         this.selectedFacultyId = selectedFacultyId;
     }
 
-    public String getPersistenceType() {
-        return persistenceType;
+    public boolean isEditMode() {
+        return editMode;
     }
 
-    public void setPersistenceType(String persistenceType) {
-        this.persistenceType = persistenceType;
+    public void setEditMode(boolean editMode) {
+        this.editMode = editMode;
     }
 }

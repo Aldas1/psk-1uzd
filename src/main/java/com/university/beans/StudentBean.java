@@ -5,7 +5,7 @@ import com.university.entity.Student;
 import com.university.service.CourseService;
 import com.university.service.StudentService;
 import jakarta.annotation.PostConstruct;
-import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
@@ -18,7 +18,7 @@ import java.util.Set;
 import java.util.HashSet;
 
 @Named
-@RequestScoped
+@SessionScoped
 public class StudentBean implements Serializable {
 
     @Inject
@@ -33,6 +33,9 @@ public class StudentBean implements Serializable {
     private Long selectedCourseId;
     private Long[] selectedCourseIds; // New array to hold selected course IDs from checkboxes
     private String persistenceType = "jpa"; // Default to JPA
+    private boolean editMode = false;
+    private boolean showStudentCourses = false;
+    private Long showCoursesForStudentId = null;
 
     @PostConstruct
     public void init() {
@@ -82,19 +85,94 @@ public class StudentBean implements Serializable {
     public String editStudent(Student student) {
         // Reload the student to ensure all associations are loaded
         this.selectedStudent = studentService.getStudentByIdJpa(student.getId());
-        return "editStudent?faces-redirect=true";
+
+        // Initialize the selectedCourseIds array with current course IDs
+        if (selectedStudent.getCourses() != null && !selectedStudent.getCourses().isEmpty()) {
+            selectedCourseIds = selectedStudent.getCourses().stream()
+                    .map(Course::getId)
+                    .toArray(Long[]::new);
+        } else {
+            selectedCourseIds = new Long[0];
+        }
+
+        this.editMode = true;
+        return null; // Stay on the current page
     }
 
     public String updateStudent() {
         try {
+            // First save the basic student info
             studentService.saveStudentJpa(selectedStudent);
-            return "students?faces-redirect=true";
+
+            // Now handle course enrollments
+            // First, get the current courses
+            Set<Course> currentCourses = new HashSet<>(selectedStudent.getCourses());
+
+            // Convert selectedCourseIds to a Set of Course objects
+            Set<Course> newCourses = new HashSet<>();
+            if (selectedCourseIds != null && selectedCourseIds.length > 0) {
+                for (Long courseId : selectedCourseIds) {
+                    Course course = courseService.getCourseByIdJpa(courseId);
+                    if (course != null) {
+                        newCourses.add(course);
+                    }
+                }
+            }
+
+            // Determine courses to add
+            for (Course course : newCourses) {
+                if (!currentCourses.contains(course)) {
+                    studentService.enrollStudentInCourseJpa(selectedStudent.getId(), course.getId());
+                }
+            }
+
+            // Determine courses to remove
+            for (Course course : currentCourses) {
+                if (!newCourses.contains(course)) {
+                    studentService.removeStudentFromCourseJpa(selectedStudent.getId(), course.getId());
+                }
+            }
+
+            this.editMode = false;
+            init(); // Refresh the list
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO,
+                            "Success", "Student updated successfully."));
+            return null; // Stay on the current page
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR,
                             "Error updating student", e.getMessage()));
             return null;
         }
+    }
+
+    public String cancelEdit() {
+        this.editMode = false;
+        return null; // Stay on the current page
+    }
+
+    public void toggleStudentCourses(Long studentId) {
+        if (showCoursesForStudentId != null && showCoursesForStudentId.equals(studentId)) {
+            // If already showing this student's courses, hide them
+            showCoursesForStudentId = null;
+            showStudentCourses = false;
+        } else {
+            // Otherwise show this student's courses
+            showCoursesForStudentId = studentId;
+            showStudentCourses = true;
+            // Make sure we have the latest data by loading the student from the database
+            Student student = studentService.getStudentByIdJpa(studentId);
+            // The courses are now loaded via the getStudentCourses method
+        }
+    }
+
+    public List<Course> getStudentCourses() {
+        if (showCoursesForStudentId != null) {
+            Student student = studentService.getStudentByIdJpa(showCoursesForStudentId);
+            return new ArrayList<>(student.getCourses());
+        }
+        return new ArrayList<>();
     }
 
     public String enrollInCourse() {
@@ -106,6 +184,27 @@ public class StudentBean implements Serializable {
                 FacesContext.getCurrentInstance().addMessage(null,
                         new FacesMessage(FacesMessage.SEVERITY_INFO,
                                 "Enrollment successful", "Student has been enrolled in the course."));
+            }
+            return "editStudent?faces-redirect=true";
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Error enrolling student", e.getMessage()));
+            return null;
+        }
+    }
+
+    public String enrollInSelectedCourses() {
+        try {
+            if (selectedStudent != null && selectedCourseIds != null && selectedCourseIds.length > 0) {
+                for (Long courseId : selectedCourseIds) {
+                    studentService.enrollStudentInCourseJpa(selectedStudent.getId(), courseId);
+                }
+                // Refresh the selected student to show updated courses
+                selectedStudent = studentService.getStudentByIdJpa(selectedStudent.getId());
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_INFO,
+                                "Enrollment successful", "Student has been enrolled in the selected courses."));
             }
             return "editStudent?faces-redirect=true";
         } catch (Exception e) {
@@ -183,11 +282,27 @@ public class StudentBean implements Serializable {
         this.selectedCourseIds = selectedCourseIds;
     }
 
-    public String getPersistenceType() {
-        return persistenceType;
+    public void setEditMode(boolean editMode) {
+        this.editMode = editMode;
     }
 
-    public void setPersistenceType(String persistenceType) {
-        this.persistenceType = persistenceType;
+    public boolean isEditMode() {
+        return editMode;
+    }
+
+    public boolean isShowStudentCourses() {
+        return showStudentCourses;
+    }
+
+    public void setShowStudentCourses(boolean showStudentCourses) {
+        this.showStudentCourses = showStudentCourses;
+    }
+
+    public Long getShowCoursesForStudentId() {
+        return showCoursesForStudentId;
+    }
+
+    public void setShowCoursesForStudentId(Long showCoursesForStudentId) {
+        this.showCoursesForStudentId = showCoursesForStudentId;
     }
 }

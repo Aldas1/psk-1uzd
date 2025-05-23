@@ -2,10 +2,9 @@ package com.university.beans;
 
 import com.university.entity.Course;
 import com.university.entity.Faculty;
-import com.university.entity.Student;
+import com.university.mybatis.entity.FacultyMB;
 import com.university.service.CourseService;
 import com.university.service.FacultyService;
-import com.university.service.StudentService;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
@@ -14,7 +13,6 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 @Named
@@ -44,6 +42,7 @@ public class CourseBean implements Serializable {
         try {
             // If a faculty is selected, set it for the new course
             if (selectedFacultyId != null) {
+                // Get faculty using JPA since Course entity still uses JPA Faculty entity
                 Faculty faculty = facultyService.getFacultyByIdJpa(selectedFacultyId);
                 newCourse.setFaculty(faculty);
             }
@@ -94,6 +93,7 @@ public class CourseBean implements Serializable {
         try {
             // If a faculty is selected, set it for the course
             if (selectedFacultyId != null) {
+                // Get faculty using JPA since Course entity still uses JPA Faculty entity
                 Faculty faculty = facultyService.getFacultyByIdJpa(selectedFacultyId);
                 selectedCourse.setFaculty(faculty);
             } else {
@@ -112,6 +112,11 @@ public class CourseBean implements Serializable {
                             "Error updating course", e.getMessage()));
             return null;
         }
+    }
+
+    // Method to get faculties for dropdown - now using MyBatis
+    public List<FacultyMB> getFacultiesForDropdown() {
+        return facultyService.getAllFacultiesMyBatis();
     }
 
     // Getters and setters

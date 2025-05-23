@@ -1,7 +1,6 @@
 package com.university.beans;
 
-import com.university.entity.Course;
-import com.university.entity.Faculty;
+import com.university.mybatis.entity.FacultyMB;
 import com.university.service.FacultyService;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.SessionScoped;
@@ -11,7 +10,6 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 @Named
@@ -21,21 +19,23 @@ public class FacultyBean implements Serializable {
     @Inject
     private FacultyService facultyService;
 
-    private List<Faculty> faculties;
-    private Faculty newFaculty;
-    private Faculty selectedFaculty;
+    private List<FacultyMB> faculties;
+    private FacultyMB newFaculty;
+    private FacultyMB selectedFaculty;
     private boolean editMode = false;
 
     @PostConstruct
     public void init() {
-        faculties = facultyService.getAllFacultiesJpa();
-        newFaculty = new Faculty();
-        selectedFaculty = new Faculty();
+        // Now using MyBatis instead of JPA
+        faculties = facultyService.getAllFacultiesMyBatis();
+        newFaculty = new FacultyMB();
+        selectedFaculty = new FacultyMB();
     }
 
     public String saveFaculty() {
         try {
-            facultyService.saveFacultyJpa(newFaculty);
+            // Using MyBatis service method
+            facultyService.saveFacultyMyBatis(newFaculty);
             init(); // Refresh the list
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_INFO,
@@ -51,7 +51,8 @@ public class FacultyBean implements Serializable {
 
     public String deleteFaculty(Long id) {
         try {
-            facultyService.deleteFacultyJpa(id);
+            // Using MyBatis service method
+            facultyService.deleteFacultyMyBatis(id);
             init(); // Refresh the list
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_INFO,
@@ -65,16 +66,17 @@ public class FacultyBean implements Serializable {
         }
     }
 
-    public String editFaculty(Faculty faculty) {
-        // Load the fresh faculty with all associations
-        this.selectedFaculty = facultyService.getFacultyByIdJpa(faculty.getId());
+    public String editFaculty(FacultyMB faculty) {
+        // Load the fresh faculty using MyBatis
+        this.selectedFaculty = facultyService.getFacultyByIdMyBatis(faculty.getId());
         this.editMode = true;
         return null; // Stay on the current page
     }
 
     public String updateFaculty() {
         try {
-            facultyService.saveFacultyJpa(selectedFaculty);
+            // Using MyBatis service method
+            facultyService.saveFacultyMyBatis(selectedFaculty);
             this.editMode = false;
             init(); // Refresh the list
             FacesContext.getCurrentInstance().addMessage(null,
@@ -90,23 +92,23 @@ public class FacultyBean implements Serializable {
     }
 
     // Getters and setters
-    public List<Faculty> getFaculties() {
+    public List<FacultyMB> getFaculties() {
         return faculties;
     }
 
-    public Faculty getNewFaculty() {
+    public FacultyMB getNewFaculty() {
         return newFaculty;
     }
 
-    public void setNewFaculty(Faculty newFaculty) {
+    public void setNewFaculty(FacultyMB newFaculty) {
         this.newFaculty = newFaculty;
     }
 
-    public Faculty getSelectedFaculty() {
+    public FacultyMB getSelectedFaculty() {
         return selectedFaculty;
     }
 
-    public void setSelectedFaculty(Faculty selectedFaculty) {
+    public void setSelectedFaculty(FacultyMB selectedFaculty) {
         this.selectedFaculty = selectedFaculty;
     }
 
